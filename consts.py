@@ -22,6 +22,12 @@ threshold = 0.6
        
 pic_dir = 'pics/frame/' # I save last frame here for cropping and stuff
 
+drawable_classes = [
+                    1, # Head
+                    2, # Head
+                    #3  # Person
+                    ]
+
 ##################################################
 ################## FRONT CONSTS ##################
 ##################################################
@@ -46,8 +52,15 @@ label_color = { 1:( 44, 226, 166),
 ################# STORAGE CONSTS #################
 ##################################################
 
-weights_file = 'win_files/1399aug/frozen_interference_graph.pb'
-resnet_url   = 'https://yadi.sk/d/eOzlYwzh1iwWBA'
+model_parts = [
+   '1flRqp2GVU488yI0x-fYSlZnvGmShXCsY',
+    '1RuZOb2FpN-5CF4WdKFi6bErtJdc4aeG1',
+    '1r253hvKVbGgwu3mxqwnNXWx5rcRz6JsF',
+    '1hFgEkjkFrYfdjTxn9tC4-hWV_dIWxZaG',
+    '1AbqSGnlsp3pkLrUFTNstYHDdYN1bXQrJ',
+    '1RnPZlDRfRenoKbzGvbno-kexbeOLp2Xw',
+    '179qtG0-gp82iySwlEwGKJMwzYCSb24lk',
+]
 
             
 
