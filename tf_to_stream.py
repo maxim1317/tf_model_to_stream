@@ -68,6 +68,19 @@ class CamHandler(BaseHTTPRequestHandler):
                         timer = time.time()
                     print("Frame number: ", cnt)
                     image_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                    im_w = image_np.shape[1]
+                    im_h = image_np.shape[0]
+
+                    z_xmin, z_xmax = int(im_w//2 - w_mult*im_w + 1), int(im_w//2 + w_mult*im_w)
+                    z_ymin, z_ymax = int(im_h*h_mult), int(im_h)
+                    print(z_xmin, z_xmax)
+                    print(z_ymin, z_ymax)
+                    z_h = z_ymax - z_ymin
+                    z_w = z_xmax - z_xmin
+                    zone_img = image_np.copy()[z_ymin:z_ymax, z_xmin:z_xmax]
+
+
                     inf_time = time.time()
                     image_np_expanded = np.expand_dims(image_np, axis=0)
                     # Get handles to input and output tensors
@@ -84,12 +97,21 @@ class CamHandler(BaseHTTPRequestHandler):
                                                                                ) 
                     out_img = image_np.copy()
                     out_img = cv2.cvtColor(np.array(image_np.copy()), cv2.COLOR_RGB2BGR)
-                    im_w = image_np.shape[1]
-                    im_h = image_np.shape[0]
+                    # im_w = image_np.shape[1]
+                    # im_h = image_np.shape[0]
                     # zone = (
                     #     (int(im_w//2)- int(im_w*0.3), int(im_h//2)),
                     #     (int(im_w//2) + int(im_w*0.3), int(im_h - 1))
                     # )
+
+
+
+                    cv2.rectangle(out_img, 
+                        (z_xmin, z_ymin),
+                        (z_xmax - 1, z_ymax),
+                        (0, 240, 240),
+                        1
+                        )  
 
                     for ndet in range(int(num_detections[0])):
                         if scores[0][ndet] > 0.75:
@@ -105,6 +127,12 @@ class CamHandler(BaseHTTPRequestHandler):
                                                    2
                                                 )
                             if class_num==1: inHelmet=True
+
+
+                    zone_img = out_img.copy()[z_ymin:z_ymax, z_xmin:z_xmax]
+
+                    out_img = cv2.blur(out_img, (40,40))
+                    out_img[z_ymin:z_ymax, z_xmin:z_xmax] = zone_img
                     # cv2.rectangle( out_img,
                     #                (zone[0][0],zone[0][1]),
                     #                (zone[1][0],zone[1][1]),
@@ -156,6 +184,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('-vs', '--videostream', default='0', type=str,
                     help='videofile path(or device number(default is 0))')
+    ap.add_argument('-hz', '--height_zone', default=0.0, type=float,
+                help='fraction of height for search zone(default is 0.0))')
+    ap.add_argument('-wz', '--width_zone', default=0.5, type=float,
+                    help='fraction of width for search zone from middle point(default is 0.5))')
+
     args = vars(ap.parse_args())
 
     colorama.init()
@@ -203,6 +236,12 @@ def main():
     H = vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+
+
+    #### Zone mults
+
+    h_mult = args.get('height_zone')
+    w_mult = args.get('width_zone')
 
     try:
 
