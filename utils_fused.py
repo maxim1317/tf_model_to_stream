@@ -9,13 +9,12 @@ import threading
 import requests
 import time
 import colorama
+import wget
 
 import cv2
 
 # import tensorflow as tf
 import numpy as np
-
-import urllib2
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
@@ -23,7 +22,7 @@ from socketserver import ThreadingMixIn
 from PIL import Image
 from io import BytesIO
 
-import tqdm
+from tqdm import tqdm
 from termcolor import colored
 
 import cognitive_face as CF
@@ -88,8 +87,9 @@ def download_weights(model_dir):
     '''
     '''
     prefix = 'https://drive.google.com/uc?export=download&id='
-    tmp_dir = model_dir + 'tmp/'
-    weights_file = model_dir + 'frozen_interference_graph.pb'
+    model_dir = model_dir
+    tmp_dir = os.path.join(model_dir, 'tmp/')
+    weights_file = os.path.join(model_dir, 'frozen_inference_graph.pb')
 
     # print('Looking for weights: ', weights_file)
 
@@ -101,8 +101,8 @@ def download_weights(model_dir):
         
         print(colored(' Loading Chunks...', 'yellow'))
 
-        bar = tqdm(total=len(parts))
-        for part in parts:
+        bar = tqdm(total=len(model_parts))
+        for part in model_parts:
             wget.download(prefix+part, tmp_dir + 'part000'+str(i))
             i += 1
             bar.update(1)

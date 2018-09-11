@@ -1,5 +1,6 @@
 from utils_fused import *
 
+
 def face_api(frame):
     detected_faces = []
     identified_faces = []
@@ -85,10 +86,10 @@ class CamHandler(BaseHTTPRequestHandler):
                     out_img = cv2.cvtColor(np.array(image_np.copy()), cv2.COLOR_RGB2BGR)
                     im_w = image_np.shape[1]
                     im_h = image_np.shape[0]
-                    zone = (
-                        (int(im_w//2)- int(im_w*0.3), int(im_h//2)),
-                        (int(im_w//2) + int(im_w*0.3), int(im_h - 1))
-                    )
+                    # zone = (
+                    #     (int(im_w//2)- int(im_w*0.3), int(im_h//2)),
+                    #     (int(im_w//2) + int(im_w*0.3), int(im_h - 1))
+                    # )
 
                     for ndet in range(int(num_detections[0])):
                         if scores[0][ndet] > 0.75:
@@ -159,7 +160,6 @@ def main():
 
     colorama.init()
 
-    download_weights()
 
     import tensorflow as tf
 
@@ -169,9 +169,11 @@ def main():
     ## MODEL PREPARATION
 
     #### Variables
-    MODEL_NAME = os.abspath('model/')
-    PATH_TO_CKPT = MODEL_NAME + 'frozen_inference_graph.pb'
+    MODEL_NAME = os.path.abspath('model/')
+    PATH_TO_CKPT = os.path.join(MODEL_NAME, 'frozen_inference_graph.pb')
     #### Load a (frozen) Tensorflow model into memory.
+
+    download_weights(MODEL_NAME)
 
     detection_graph = tf.Graph()
     with detection_graph.as_default():
@@ -226,3 +228,5 @@ def main():
     vidcap.release()
     out.release()
     cv2.destroyAllWindows()
+
+main()
