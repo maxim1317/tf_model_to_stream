@@ -1,6 +1,8 @@
 __pycache__/
 pics/
 model/
+
+*.mp4
 *.pyd
 *.json
 *.pb
