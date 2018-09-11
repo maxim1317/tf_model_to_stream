@@ -48,6 +48,10 @@ label_color = { 1:( 44, 226, 166),
                 2:(114, 38 , 249),
                 3:(255, 189, 137)}
 
+import os
+MODEL_NAME = os.path.abspath('model/')
+PATH_TO_CKPT = os.path.join(MODEL_NAME, 'frozen_inference_graph.pb')
+
 ##################################################
 ################# STORAGE CONSTS #################
 ##################################################

@@ -185,7 +185,7 @@ def sendToIdentification(detected_faces):
 
     print('#######################################################')
     if len(identified_faces) != 0:
-        identified_faces.sort()
+        # identified_faces.sort()
         print(colored(' Identification...' + spc(26) + '[   ' , color='white') + colored('OK', color='green') + colored('   ]' , color='white'))
     else:
         print(colored(' Identification...' + spc(26) + '[ ' , color='white') + colored('FAILED', color='red') + colored(' ]' , color='white'))

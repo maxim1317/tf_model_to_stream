@@ -1,5 +1,76 @@
 from utils_fused import *
 
+ap = argparse.ArgumentParser()
+ap.add_argument('-vs', '--videostream', default='0', type=str,
+                help='videofile path(or device number(default is 0))')
+ap.add_argument('-hz', '--height_zone', default=0.0, type=float,
+            help='fraction of height for search zone(default is 0.0))')
+ap.add_argument('-wz', '--width_zone', default=0.5, type=float,
+                help='fraction of width for search zone from middle point(default is 0.5))')
+
+args = vars(ap.parse_args())
+
+
+import tensorflow as tf
+
+if int(tf.__version__.split('.')[1]) < 4:
+    raise ImportError('Please upgrade your tensorflow installation to v1.4.* or later!')
+
+## MODEL PREPARATION
+
+#### Variables
+
+#### Load a (frozen) Tensorflow model into memory.
+
+download_weights(MODEL_NAME)
+
+#### Video
+
+full_vid1_path = args.get('videostream')
+full_vid1_path = int(full_vid1_path) if full_vid1_path.isdigit() else full_vid1_path
+# global vidcap
+vidcap = cv2.VideoCapture(full_vid1_path)
+vid_fps = vidcap.get(cv2.CAP_PROP_FPS)
+vidcap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
+vidcap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
+print("Video fps: ", vid_fps)
+print(vidcap.get(cv2.CAP_PROP_FRAME_WIDTH))
+print(vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+W = vidcap.get(cv2.CAP_PROP_FRAME_WIDTH)
+H = vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+
+#### Zone mults
+
+h_mult = args.get('height_zone')
+w_mult = args.get('width_zone')
+
+colorama.init()
+
+detection_graph = tf.Graph()
+with detection_graph.as_default():
+    od_graph_def = tf.GraphDef()
+    with tf.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
+        serialized_graph = fid.read()
+        od_graph_def.ParseFromString(serialized_graph)
+        tf.import_graph_def(od_graph_def, name='')
+config = tf.ConfigProto()
+config.gpu_options.allow_growth=True
+detection_sess = tf.Session(graph=detection_graph, config=config)
+
+    
+
+
+
+
+
+
+                
+                
+# vidcap.release()
+# out.release()
+# cv2.destroyAllWindows()
 
 def face_api(frame):
     detected_faces = []
@@ -36,6 +107,8 @@ class CamHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type','multipart/x-mixed-replace; boundary=--jpgboundary')
             self.end_headers()
+
+
 
             try:
 
@@ -80,9 +153,12 @@ class CamHandler(BaseHTTPRequestHandler):
                     z_w = z_xmax - z_xmin
                     zone_img = image_np.copy()[z_ymin:z_ymax, z_xmin:z_xmax]
 
+                    if cur_time - last_call_time > cooling_time: 
+                        threading.Thread(target=face_api, args=[zone_img]).start()
+                        last_call_time = cur_time
 
                     inf_time = time.time()
-                    image_np_expanded = np.expand_dims(image_np, axis=0)
+                    image_np_expanded = np.expand_dims(zone_img, axis=0)
                     # Get handles to input and output tensors
                     boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
                     scores = detection_graph.get_tensor_by_name('detection_scores:0')
@@ -121,8 +197,8 @@ class CamHandler(BaseHTTPRequestHandler):
                                 # if class_num <= 3:
                                     cv2.rectangle( 
                                                    out_img,
-                                                   (int(xmin*im_w),int(ymin*im_h)),
-                                                   (int(xmax*im_w),int(ymax*im_h)),
+                                                   (int(xmin*z_w) + z_xmin,int(ymin*z_h) + z_ymin),
+                                                   (int(xmax*z_w) + z_xmin,int(ymax*z_h) + z_ymin),
                                                    label_color[class_num],
                                                    2
                                                 )
@@ -154,9 +230,6 @@ class CamHandler(BaseHTTPRequestHandler):
                     # out.write(out_img)
                     # time.sleep(0.05)
 
-                    if cur_time - last_call_time > cooling_time: 
-                        threading.Thread(target=face_api, args=[frame]).start()
-                        last_call_time = cur_time
 
                     cnt += 1
 
@@ -179,93 +252,22 @@ class CamHandler(BaseHTTPRequestHandler):
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 	"""Handle requests in a separate thread."""
 
-def main():
+try:
 
-    ap = argparse.ArgumentParser()
-    ap.add_argument('-vs', '--videostream', default='0', type=str,
-                    help='videofile path(or device number(default is 0))')
-    ap.add_argument('-hz', '--height_zone', default=0.0, type=float,
-                help='fraction of height for search zone(default is 0.0))')
-    ap.add_argument('-wz', '--width_zone', default=0.5, type=float,
-                    help='fraction of width for search zone from middle point(default is 0.5))')
-
-    args = vars(ap.parse_args())
-
-    colorama.init()
+    CF.Key.set(subscription_key)
+    CF.BaseUrl.set(uri_base)
 
 
-    import tensorflow as tf
-
-    if int(tf.__version__.split('.')[1]) < 4:
-        raise ImportError('Please upgrade your tensorflow installation to v1.4.* or later!')
-
-    ## MODEL PREPARATION
-
-    #### Variables
-    MODEL_NAME = os.path.abspath('model/')
-    PATH_TO_CKPT = os.path.join(MODEL_NAME, 'frozen_inference_graph.pb')
-    #### Load a (frozen) Tensorflow model into memory.
-
-    download_weights(MODEL_NAME)
-
-    detection_graph = tf.Graph()
-    with detection_graph.as_default():
-        od_graph_def = tf.GraphDef()
-        with tf.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
-            serialized_graph = fid.read()
-            od_graph_def.ParseFromString(serialized_graph)
-            tf.import_graph_def(od_graph_def, name='')
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth=True
-    detection_sess = tf.Session(graph=detection_graph, config=config)
-
-        
-    #### Video
-
-    full_vid1_path = args.get('videostream')
-    full_vid1_path = int(full_vid1_path) if full_vid1_path.isdigit() else full_vid1_path
-    # global vidcap
-    vidcap = cv2.VideoCapture(full_vid1_path)
-    vid_fps = vidcap.get(cv2.CAP_PROP_FPS)
-    vidcap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
-    vidcap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
-    print("Video fps: ", vid_fps)
-    print(vidcap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    print(vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    W = vidcap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    H = vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-
-
-    #### Zone mults
-
-    h_mult = args.get('height_zone')
-    w_mult = args.get('width_zone')
-
-    try:
-
-        CF.Key.set(subscription_key)
-        CF.BaseUrl.set(uri_base)
-
-
-        
-        print('\n#######################################################\n')
-        checkIfTrained() # Checking if person_group is trained
-        print('\n#######################################################\n')
+    
+    print('\n#######################################################\n')
+    checkIfTrained() # Checking if person_group is trained
+    print('\n#######################################################\n')
 
 
 
-        server = ThreadedHTTPServer(('localhost', 8086), CamHandler)
-        print (" Server started")
-        server.serve_forever()
-    except KeyboardInterrupt:
-        # vidcap.release()
-        server.socket.close()
-                    
-                    
-    vidcap.release()
-    out.release()
-    cv2.destroyAllWindows()
-
-main()
+    server = ThreadedHTTPServer(('localhost', 8086), CamHandler)
+    print (" Server started")
+    server.serve_forever()
+except KeyboardInterrupt:
+    # vidcap.release()
+    server.socket.close()
