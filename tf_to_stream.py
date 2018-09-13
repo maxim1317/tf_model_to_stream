@@ -72,13 +72,19 @@ detection_sess = tf.Session(graph=detection_graph, config=config)
 # out.release()
 # cv2.destroyAllWindows()
 
+inHelmet = False
+
+
+
 def face_api(frame):
     detected_faces = []
     identified_faces = []
+
     front_payload = {
         'detectedPersons' : [],
         'inHelmet' : False
     }
+
     detected_faces = sendToDetection(frame)
     
     print()
@@ -125,7 +131,7 @@ class CamHandler(BaseHTTPRequestHandler):
                 while vidcap.isOpened():
                     ret, frame = vidcap.read()
                     out.write(frame)
-                    inHelmet = False
+                    # inHelmet = False
 
                     if not ret:
                         break

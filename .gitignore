@@ -3,6 +3,6 @@ pics/
 model/
 
 *.mp4
-*.pyd
+*.pyc
 *.json
 *.pb
