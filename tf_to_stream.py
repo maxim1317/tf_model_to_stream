@@ -75,14 +75,13 @@ detection_sess = tf.Session(graph=detection_graph, config=config)
 inHelmet = False
 
 
-
-def face_api(frame):
+def face_api(frame, inHelmet):
     detected_faces = []
     identified_faces = []
 
     front_payload = {
         'detectedPersons' : [],
-        'inHelmet' : False
+        'inHelmet' : True
     }
 
     detected_faces = sendToDetection(frame)
@@ -114,7 +113,7 @@ class CamHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type','multipart/x-mixed-replace; boundary=--jpgboundary')
             self.end_headers()
 
-
+            inHelmet = False
 
             try:
 
@@ -160,7 +159,7 @@ class CamHandler(BaseHTTPRequestHandler):
                     zone_img = image_np.copy()[z_ymin:z_ymax, z_xmin:z_xmax]
 
                     if cur_time - last_call_time > cooling_time: 
-                        threading.Thread(target=face_api, args=[zone_img]).start()
+                        threading.Thread(target=face_api, args=[zone_img, inHelmet]).start()
                         last_call_time = cur_time
 
                     inf_time = time.time()
@@ -194,7 +193,7 @@ class CamHandler(BaseHTTPRequestHandler):
                         (0, 240, 240),
                         1
                         )  
-
+                    inHelmet=False
                     for ndet in range(int(num_detections[0])):
                         if scores[0][ndet] > 0.75:
                             ymin,xmin,ymax,xmax = boxes[0][ndet]
@@ -208,7 +207,9 @@ class CamHandler(BaseHTTPRequestHandler):
                                                    label_color[class_num],
                                                    2
                                                 )
-                            if class_num==1: inHelmet=True
+                            if class_num == 1: 
+                                inHelmet=True
+
 
 
                     zone_img = out_img.copy()[z_ymin:z_ymax, z_xmin:z_xmax]

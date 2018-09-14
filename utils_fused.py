@@ -221,6 +221,8 @@ def sendToFront(front_payload):
             if r.status_code == requests.codes.ok:
                 print('#######################################################')    
                 print(colored(' Sending to Front...' + spc(24) + '[   ' , color='white') + colored('OK', color='green') + colored('   ]' , color='white'))
+                print(front_payload)
+                print(json.dumps(front_payload))
                 print('#######################################################')
                 return 0
             else:

@@ -73,7 +73,7 @@ def run_proc(call, path):
 	    print("Execution failed:", e)
 
 def compile_back():
-	run_proc(back_comp, back_path)
+	return subprocess.call(back_comp, cwd=back_path, shell=True)
 
 def preparation():
 
@@ -107,7 +107,7 @@ def preparation():
 	else:
 		print(colored(' Looking for CV...' + spc(26) + '[ ' , color='white') + colored('FAILED', color='red') + colored(' ]' , color='white'))
 		print(colored(' Path ', color='yellow'), cv_path, colored(' not found', color='yellow'))
-		err += 1
+		err += 1 
 
 	if err > 0:
 		print(colored('\n Errors found. Check paths manually.'))
