@@ -3,7 +3,7 @@ import os
 
 from winshell import CreateShortcut
 
-from utils_fused import ensure_dir
+from utils import ensure_dir
 # from consts import reg_path
 
 drone_bat_path = 'etc/Drone_Demo.bat'

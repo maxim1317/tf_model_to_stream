@@ -1,4 +1,4 @@
-from utils_fused import *
+from utils import *
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-vs', '--videostream', default='0', type=str,
@@ -188,7 +188,7 @@ class CamHandler(BaseHTTPRequestHandler):
 
 
                     cv2.rectangle(out_img, (z_xmin, z_ymin), (z_xmax - 1, z_ymax), (0, 240, 240), 1)
-                      
+
                     inHelmet=False
                     for ndet in range(int(num_detections[0])):
                         if scores[0][ndet] > 0.75:
