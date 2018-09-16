@@ -1,4 +1,5 @@
 import os, sys
+import argparse
 import time
 import subprocess
 import signal
@@ -7,7 +8,14 @@ import webbrowser
 from termcolor import colored
 import colorama
 
+from consts import *
+
 colorama.init()
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-r', '--registration', help='Run Registration',
+    action='store_true')
+args = vars(parser.parse_args())
 
 # set system/version dependent "start_new_session" analogs
 kwargs = {}
@@ -21,15 +29,13 @@ elif sys.version_info < (3, 2):  # assume posix
 else:  # Python 3.2+ and Unix
     kwargs.update(start_new_session=True)
 
-front_path = os.path.abspath('../dron-demo-stream/')
-back_path  = os.path.abspath('../dron-demo-back/')
-back_war   = os.path.abspath(os.path.join(back_path, 'target\\dron-demo-0.0.1-SNAPSHOT.war'))
-cv_path    = os.path.abspath('./')
 
 front_call = 'npm run serve'
 back_call  = 'java -jar'
 back_comp  = 'mvn clean install'
 cv_call    = 'python tf_to_stream.py'
+
+reg_call    = 'ng serve'
 
 
 print(front_path)
@@ -136,6 +142,12 @@ def running():
 
 	return procs
 
+def run_registration():
+    procs = []
+
+    print('Starting Registration...\n')
+    return(procs.append(run_proc(reg_call, reg_path)))
+
 def open_url(url):
     if sys.platform=='win32':
         webbrowser.get("C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s").open(url)
@@ -151,22 +163,31 @@ procs = []
 
 url = 'http://localhost:8080'
 
-try:
-    print('\n#######################################################\n')
-    preparation()
-    print('\n#######################################################\n')
-    procs = running()
-    print('\n#######################################################\n')
+if not args.get('registration'):
 
+    try:
+        print('\n#######################################################\n')
+        preparation()
+        print('\n#######################################################\n')
+        procs = running()
+        print('\n#######################################################\n')
+
+        time.sleep(7)
+        open_url(url)
+
+        exit_codes = [p.wait() for p in procs]
+    	
+    except KeyboardInterrupt:
+        
+        for proc in procs:
+            proc.kill()
+        sys.exit()
+
+        signal.signal(signal.SIGINT, signal_handler(procs))
+
+else:
+    url = 'http://localhost:4200'
+    procs = run_registration()
     time.sleep(7)
     open_url(url)
-
     exit_codes = [p.wait() for p in procs]
-	
-except KeyboardInterrupt:
-    
-    for proc in procs:
-        proc.kill()
-    sys.exit()
-
-signal.signal(signal.SIGINT, signal_handler(procs))

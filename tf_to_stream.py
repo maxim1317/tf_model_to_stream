@@ -142,8 +142,8 @@ class CamHandler(BaseHTTPRequestHandler):
                     # threading.Thread(target=model_tf, args=[frame, cnt]).start() 
                     # model_tf(frame, cnt)
 
-                    if cnt == 2:
-                        timer = time.time()
+                    # if cnt == 2:
+                    #     timer = time.time()
                     print("Frame number: ", cnt)
                     image_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -187,12 +187,8 @@ class CamHandler(BaseHTTPRequestHandler):
 
 
 
-                    cv2.rectangle(out_img, 
-                        (z_xmin, z_ymin),
-                        (z_xmax - 1, z_ymax),
-                        (0, 240, 240),
-                        1
-                        )  
+                    cv2.rectangle(out_img, (z_xmin, z_ymin), (z_xmax - 1, z_ymax), (0, 240, 240), 1)
+                      
                     inHelmet=False
                     for ndet in range(int(num_detections[0])):
                         if scores[0][ndet] > 0.75:

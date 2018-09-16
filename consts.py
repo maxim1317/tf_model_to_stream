@@ -66,5 +66,15 @@ model_parts = [
     '179qtG0-gp82iySwlEwGKJMwzYCSb24lk',
 ]
 
+##################################################
+################## PATHS CONSTS ##################
+##################################################
+
+front_path = os.path.abspath('../dron-demo-stream/')
+back_path  = os.path.abspath('../dron-demo-back/')
+reg_path   = os.path.abspath('../uwat-dron-demo/')
+back_war   = os.path.abspath(os.path.join(back_path, 'target\\dron-demo-0.0.1-SNAPSHOT.war'))
+cv_path    = os.path.abspath('./')
+
             
 
