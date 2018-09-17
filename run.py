@@ -8,7 +8,7 @@ import webbrowser
 from termcolor import colored
 import colorama
 
-from consts import *
+from utils.consts import *
 
 colorama.init()
 
@@ -126,7 +126,7 @@ def running():
 
 	print('\n#######################################################\n')
 	print(colored(' Starting Front...', color='yellow'))
-	print('\n#######################################################\n')
+	# print('\n#######################################################\n')
 	procs.append(run_proc(front_call, front_path))
 	time.sleep(1)
 

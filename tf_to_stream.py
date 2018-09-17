@@ -1,4 +1,18 @@
+import argparse
+import numpy as np
+import cv2
+import threading
+
+import colorama
+
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
+
+from utils.cognitive_face import util as CF
 from utils import *
+
+import time
+
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-vs', '--videostream', default='0', type=str,
@@ -72,7 +86,7 @@ detection_sess = tf.Session(graph=detection_graph, config=config)
 # out.release()
 # cv2.destroyAllWindows()
 
-inHelmet = False
+# inHelmet = False
 
 
 def face_api(frame, inHelmet):
